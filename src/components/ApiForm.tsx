@@ -24,17 +24,17 @@ export default function ApiForm({
   const [newFieldType, setNewFieldType] = useState('string');
 
   return (
-    <div className="space-y-12 relative">
-      {/* Decorative Elements */}
-      <div className="absolute -top-10 -left-10 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
-      <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow delay-300"></div>
+    <div className="space-y-8 md:space-y-12 relative p-4 md:p-0">
+      {/* Decorative Elements - adjusted for mobile */}
+      <div className="absolute -top-5 md:-top-10 -left-5 md:-left-10 w-20 md:w-40 h-20 md:h-40 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+      <div className="absolute -bottom-5 md:-bottom-10 -right-5 md:-right-10 w-20 md:w-40 h-20 md:h-40 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow delay-300"></div>
 
-      {/* Form Title */}
+      {/* Form Title - adjusted text sizes */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-600 animate-gradient">
+        <h2 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-600 animate-gradient">
           Configure Your API
         </h2>
-        <p className="mt-2 text-white/60">Design your custom API endpoint with dynamic data fields</p>
+        <p className="mt-2 text-sm md:text-base text-white/60">Design your custom API endpoint with dynamic data fields</p>
       </div>
 
       {/* Endpoint Input */}
