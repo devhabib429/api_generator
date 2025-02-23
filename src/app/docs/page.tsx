@@ -21,7 +21,7 @@ export default function DocsPage() {
             <ol className="space-y-4 text-white/70">
               <li>Enter your desired endpoint name in the input field</li>
               <li>Add fields with their respective data types</li>
-              <li>Click "Generate API" to create your endpoint</li>
+              <li>Click &quot;Generate API&quot; to create your endpoint</li>
               <li>Use the provided URL to access your mock API</li>
             </ol>
           </div>

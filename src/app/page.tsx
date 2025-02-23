@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import ApiForm from '@/components/ApiForm';
 import ApiPreview from '@/components/ApiPreview';
 import { Field } from '@/lib/types';
-import Image from "next/image";
 
 export default function Home() {
   const [endpoint, setEndpoint] = useState('');
@@ -12,16 +11,6 @@ export default function Home() {
   const [count, setCount] = useState(1);
   const [generatedUrl, setGeneratedUrl] = useState('');
   const [previewData, setPreviewData] = useState<Record<string, unknown>>({});
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  // Navbar scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const handleGenerate = async () => {
     if (!endpoint || fields.length === 0) return;
@@ -41,7 +30,7 @@ export default function Home() {
 
       // Then make the actual API request with just the count
       const apiUrl = `${baseUrl}/api/${endpoint}?count=${count}`;
-      setGeneratedUrl(apiUrl); // Store the clean URL
+      setGeneratedUrl(apiUrl);
       
       const response = await fetch(apiUrl);
       const data = await response.json();
