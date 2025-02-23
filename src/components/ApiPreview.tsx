@@ -2,13 +2,13 @@ import { useState } from 'react';
 
 interface ApiPreviewProps {
   url: string;
-  data: any;
+  data: Record<string, unknown>;
   fields: { name: string }[];
 }
 
 export default function ApiPreview({ url, data, fields }: ApiPreviewProps) {
   const [loading, setLoading] = useState(false);
-  const [apiResponse, setApiResponse] = useState<any>(data);
+  const [apiResponse, setApiResponse] = useState<Record<string, unknown>>(data);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);

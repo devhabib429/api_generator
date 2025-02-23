@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import ApiForm from '@/components/ApiForm';
 import ApiPreview from '@/components/ApiPreview';
 import { Field } from '@/lib/types';
@@ -12,7 +11,7 @@ export default function Home() {
   const [fields, setFields] = useState<Field[]>([]);
   const [count, setCount] = useState(1);
   const [generatedUrl, setGeneratedUrl] = useState('');
-  const [previewData, setPreviewData] = useState<any>(null);
+  const [previewData, setPreviewData] = useState<Record<string, unknown>>({});
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Navbar scroll effect
@@ -53,21 +52,6 @@ export default function Home() {
       }, 100);
     } catch (error) {
       console.error('Error generating API:', error);
-    }
-  };
-
-  const getMockValue = (type: string) => {
-    switch (type) {
-      case 'string':
-        return 'Sample Text';
-      case 'number':
-        return 42;
-      case 'boolean':
-        return true;
-      case 'email':
-        return 'example@email.com';
-      default:
-        return 'Sample Data';
     }
   };
 

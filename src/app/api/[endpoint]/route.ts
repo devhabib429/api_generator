@@ -1,5 +1,4 @@
-import { NextResponse } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
+import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -29,12 +28,15 @@ async function saveConfig(endpoint: string, fields: { name: string; type: string
   }
 }
 
-export async function GET(
-  request: Request,
-  context: { params: { endpoint: string } }
-) {
+type RouteContext = { params: Promise<{ endpoint: string }> };
+
+// Add type for record values
+type RecordValue = string | number | boolean;
+type ApiRecord = Record<string, RecordValue>;
+
+export async function GET(request: NextRequest, context: RouteContext) {
   try {
-    const { endpoint } = await Promise.resolve(context.params);
+    const { endpoint } = await context.params;
     const url = new URL(request.url);
     
     // Get selected fields and filters from query params
@@ -65,8 +67,8 @@ export async function GET(
 
     // Generate records with field selection and filtering
     let data = Array.from({ length: safeCount }, (_, index) => {
-      // Generate a consistent ID for each record
-      const recordId = uuidv4();
+      // Generate a consistent ID for each record based on endpoint and index
+      const recordId = `${endpoint}_${index + 1}`;
       
       const baseRecord = {
         id: recordId,
@@ -74,7 +76,7 @@ export async function GET(
         updatedAt: new Date().toISOString(),
       };
 
-      const record: Record<string, any> = selectedFields.length > 0 
+      const record: ApiRecord = selectedFields.length > 0 
         ? { id: baseRecord.id }
         : baseRecord;
 
@@ -92,9 +94,7 @@ export async function GET(
     if (Object.keys(filters).length > 0) {
       data = data.filter(record => {
         return Object.entries(filters).every(([key, value]) => {
-          // Get the record value, converting to string for comparison
           const recordValue = String(record[key] || '').toLowerCase();
-          // Check if the filter value is included in the record value
           return recordValue.includes(value.toLowerCase());
         });
       });
@@ -123,7 +123,7 @@ export async function GET(
   }
 }
 
-function generateFieldValue(fieldName: string, type: string, index: number): any {
+function generateFieldValue(fieldName: string, type: string, index: number): RecordValue {
   // Generate values based on field name and type
   if (fieldName.includes('name')) {
     return `John Doe ${index}`;
@@ -151,11 +151,35 @@ function generateFieldValue(fieldName: string, type: string, index: number): any
   }
 }
 
-export async function OPTIONS() {
+export async function POST(request: NextRequest, context: RouteContext) {
+  try {
+    const { endpoint } = await context.params;
+    const { fields } = await request.json();
+
+    await saveConfig(endpoint, fields);
+
+    return NextResponse.json({ success: true }, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json',
+      },
+    });
+  } catch (error) {
+    console.error('Error saving config:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function OPTIONS(_request: NextRequest, _context: RouteContext) {
   return NextResponse.json({}, {
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });
