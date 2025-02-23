@@ -6,10 +6,6 @@
         "type": "string"
       },
       {
-        "name": "phone",
-        "type": "string"
-      },
-      {
         "name": "email",
         "type": "string"
       }
@@ -31,6 +27,18 @@
       },
       {
         "name": "phone",
+        "type": "string"
+      }
+    ]
+  },
+  "user": {
+    "fields": [
+      {
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "name": "email",
         "type": "string"
       }
     ]
