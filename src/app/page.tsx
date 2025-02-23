@@ -56,23 +56,123 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-black/50 backdrop-blur-xl' : ''
-      }`}>
-        <nav className="container mx-auto px-4 md:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Image src="/api-logo.svg" alt="API Generator" width={32} height={32} />
-              <span className="text-lg md:text-xl font-bold">API Generator</span>
+    <div className="min-h-screen bg-[#0A0A1F] text-white relative overflow-hidden">
+      {/* Enhanced Background Effects */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute w-full h-full bg-[url('/grid.svg')] opacity-[0.02]" />
+        <div className="absolute top-0 -left-1/4 w-1/2 h-1/2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 blur-[100px] rounded-full animate-pulse-slow" />
+        <div className="absolute bottom-0 -right-1/4 w-1/2 h-1/2 bg-gradient-to-l from-cyan-500/10 to-blue-500/10 blur-[100px] rounded-full animate-pulse-slow delay-700" />
+        
+        {/* Code Matrix Effect */}
+        <div className="absolute inset-0 overflow-hidden opacity-10">
+          <div className="matrix-code"></div>
+        </div>
+      </div>
+
+      {/* Hero Section with Example */}
+      <div className="relative pt-32 pb-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-600 animate-gradient">
+              Generate Mock APIs
+              <br />
+              in Seconds
+            </h1>
+            <p className="text-xl text-white/60 mb-12 max-w-2xl mx-auto">
+              Create custom endpoints with dynamic data instantly. Perfect for prototyping and testing your applications.
+            </p>
+          </div>
+
+          {/* Example Code Snippets */}
+          <div className="grid md:grid-cols-2 gap-8 mb-20">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-3 w-3 bg-green-500 rounded-full animate-pulse"></div>
+                <h3 className="text-xl font-semibold text-white/80">Define Your API</h3>
+              </div>
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl blur-lg transition-all duration-500 opacity-0 group-hover:opacity-100"></div>
+                <pre className="relative bg-black/50 backdrop-blur-xl rounded-xl p-6 font-mono text-sm text-white/70 overflow-x-auto border border-white/10">
+{`// Example API Configuration
+{
+  "endpoint": "users",
+  "fields": [
+    { "name": "id", "type": "number" },
+    { "name": "username", "type": "string" },
+    { "name": "email", "type": "email" },
+    { "name": "isActive", "type": "boolean" }
+  ]
+}`}
+                </pre>
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <button className="text-white/30 hover:text-blue-400 transition-colors">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="hidden md:flex items-center gap-6">
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-3 w-3 bg-blue-500 rounded-full animate-pulse"></div>
+                <h3 className="text-xl font-semibold text-white/80">Get Your Data</h3>
+              </div>
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-lg transition-all duration-500 opacity-0 group-hover:opacity-100"></div>
+                <pre className="relative bg-black/50 backdrop-blur-xl rounded-xl p-6 font-mono text-sm text-white/70 overflow-x-auto border border-white/10">
+{`// Example API Response
+{
+  "data": [
+    {
+      "id": 1,
+      "username": "john_doe",
+      "email": "john@example.com",
+      "isActive": true
+    },
+    // ... more records
+  ],
+  "pagination": {
+    "count": 10,
+    "total": 10
+  }
+}`}
+                </pre>
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <button className="text-white/30 hover:text-blue-400 transition-colors">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Navbar */}
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? 'bg-[#0A0A1F]/80 backdrop-blur-xl border-b border-white/5' : ''}`}>
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 p-[1px] group">
+                <div className="w-full h-full rounded-xl bg-[#0A0A1F] flex items-center justify-center group-hover:bg-transparent transition-all duration-300">
+                  <Image src="/api-logo.svg" alt="API Generator" width={24} height={24} className="group-hover:scale-110 transition-all duration-300" />
+                </div>
+              </div>
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-cyan-400">
+                API Generator
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-4">
               <a href="#" className="text-white/70 hover:text-white transition-colors duration-200">Docs</a>
               <a href="#" className="text-white/70 hover:text-white transition-colors duration-200">Examples</a>
               <a href="https://github.com/yourusername/api-generator" 
-                 target="_blank"
-                 rel="noopener noreferrer"
+            target="_blank"
+            rel="noopener noreferrer"
                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-300"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -81,19 +181,13 @@ export default function Home() {
                 <span>GitHub</span>
               </a>
             </div>
-            {/* Mobile menu button */}
-            <button className="md:hidden p-2">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
-              </svg>
-            </button>
           </div>
-        </nav>
-      </header>
+        </div>
+      </nav>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 md:px-6 pt-24 pb-16">
-        <div className="max-w-4xl mx-auto space-y-12 md:space-y-16">
+      {/* Main Form Section */}
+      <div className="relative max-w-6xl mx-auto px-4 pb-32">
+        <div className="bg-white/5 backdrop-blur-2xl rounded-3xl p-8 border border-white/10 shadow-2xl">
           <ApiForm
             endpoint={endpoint}
             setEndpoint={setEndpoint}
@@ -103,15 +197,18 @@ export default function Home() {
             setCount={setCount}
             onGenerate={handleGenerate}
           />
-          {generatedUrl && (
-            <ApiPreview
-              url={generatedUrl}
-              data={previewData}
-              fields={fields}
-            />
+          
+          {generatedUrl && previewData && (
+            <div className="mt-12 animate-fade-in">
+              <ApiPreview 
+                url={generatedUrl} 
+                data={previewData} 
+                fields={fields}
+              />
+            </div>
           )}
         </div>
-      </main>
+      </div>
 
       {/* Features Section */}
       <div className="relative py-32 bg-gradient-to-b from-transparent via-blue-500/5 to-transparent">
@@ -148,9 +245,9 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-black/20 backdrop-blur-xl">
-        <div className="container mx-auto px-4 md:px-6 py-12 md:py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
+      <footer className="relative py-16 border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Image src="/api-logo.svg" alt="API Generator" width={24} height={24} className="opacity-50" />

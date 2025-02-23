@@ -24,17 +24,17 @@ export default function ApiForm({
   const [newFieldType, setNewFieldType] = useState('string');
 
   return (
-    <div className="space-y-8 md:space-y-12 relative px-4 md:px-0">
+    <div className="space-y-12 relative">
       {/* Decorative Elements */}
       <div className="absolute -top-10 -left-10 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
       <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow delay-300"></div>
 
       {/* Form Title */}
       <div className="text-center">
-        <h2 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-600 animate-gradient">
+        <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-600 animate-gradient">
           Configure Your API
         </h2>
-        <p className="mt-2 text-sm md:text-base text-white/60">Design your custom API endpoint with dynamic data fields</p>
+        <p className="mt-2 text-white/60">Design your custom API endpoint with dynamic data fields</p>
       </div>
 
       {/* Endpoint Input */}
@@ -72,13 +72,13 @@ export default function ApiForm({
         </div>
         
         {/* Field Input */}
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex gap-3">
           <input
             type="text"
             value={newFieldName}
             onChange={(e) => setNewFieldName(e.target.value)}
             placeholder="Field name"
-            className="flex-1 w-full md:w-auto bg-black/20 backdrop-blur-xl border border-white/10 rounded-xl px-4 py-3
+            className="flex-1 bg-black/20 backdrop-blur-xl border border-white/10 rounded-xl px-4 py-3
                      text-white placeholder-white/20
                      focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/10
                      transition-all duration-300"
@@ -86,7 +86,7 @@ export default function ApiForm({
           <select
             value={newFieldType}
             onChange={(e) => setNewFieldType(e.target.value)}
-            className="w-full md:w-auto bg-black/20 backdrop-blur-xl border border-white/10 rounded-xl px-4 py-3
+            className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-xl px-4 py-3
                      text-white appearance-none
                      focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/10
                      transition-all duration-300"
