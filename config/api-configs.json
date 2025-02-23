@@ -1,0 +1,38 @@
+{
+  "users": {
+    "fields": [
+      {
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "name": "phone",
+        "type": "string"
+      },
+      {
+        "name": "email",
+        "type": "string"
+      }
+    ]
+  },
+  "students": {
+    "fields": [
+      {
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "name": "roll number",
+        "type": "string"
+      },
+      {
+        "name": "email",
+        "type": "string"
+      },
+      {
+        "name": "phone",
+        "type": "string"
+      }
+    ]
+  }
+}
