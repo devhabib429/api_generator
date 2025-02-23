@@ -7,7 +7,6 @@ interface ApiPreviewProps {
 }
 
 export default function ApiPreview({ url, data, fields }: ApiPreviewProps) {
-  const [loading, setLoading] = useState(false);
   const [apiResponse, setApiResponse] = useState<Record<string, unknown>>(data);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -39,7 +38,6 @@ export default function ApiPreview({ url, data, fields }: ApiPreviewProps) {
   };
 
   const testApi = async () => {
-    setLoading(true);
     setError(null);
     try {
       const response = await fetch(getUrlWithParams());
@@ -48,8 +46,6 @@ export default function ApiPreview({ url, data, fields }: ApiPreviewProps) {
     } catch (err) {
       setError('Failed to fetch API data');
       console.error('API Error:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
