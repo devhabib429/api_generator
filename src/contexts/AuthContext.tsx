@@ -56,13 +56,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Authentication service not available');
       }
       const provider = new GoogleAuthProvider();
+      
+      // Configure provider settings
       provider.setCustomParameters({
-        prompt: 'select_account'
+        prompt: 'select_account',
+        // Add these parameters to help with popup issues
+        display: 'popup',
+        redirect_uri: window.location.origin
       });
-      console.log('Starting Google sign in...');
-      const result = await signInWithPopup(auth, provider);
-      console.log('Sign in successful:', !!result.user);
-      return result.user;
+
+      // Add a small delay to ensure proper initialization
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      try {
+        console.log('Starting Google sign in...');
+        const result = await signInWithPopup(auth, provider);
+        console.log('Sign in successful:', !!result.user);
+        return result.user;
+      } catch (popupError) {
+        console.error('Popup error:', popupError);
+        // If popup fails, try redirect method
+        const { signInWithRedirect } = await import('firebase/auth');
+        await signInWithRedirect(auth, provider);
+      }
     } catch (error) {
       console.error('Google Sign-In Error:', error);
       if (error instanceof Error) {

@@ -29,6 +29,7 @@ const app = isConfigValid && typeof window !== 'undefined'
     : getApps()[0]
   : null;
 
+// Initialize auth without the extra argument
 const auth = app ? getAuth(app) : null;
 console.log('Firebase auth initialized:', !!auth);
 
