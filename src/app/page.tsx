@@ -22,9 +22,9 @@ export default function Home() {
     try {
       if (!user) {
         console.log('No user, attempting sign in...');
-        await signInWithGoogle();
-        if (!user) {
-          console.log('Sign in failed or was cancelled');
+        const signedInUser = await signInWithGoogle();
+        if (!signedInUser) {
+          setError('Sign in failed or was cancelled');
           return;
         }
       }
@@ -49,8 +49,8 @@ export default function Home() {
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          endpoint: endpoint,
-          fields: fields
+          endpoint,
+          fields
         }),
       });
 
