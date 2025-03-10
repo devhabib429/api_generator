@@ -7,11 +7,17 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 
 // Initialize Firebase Admin if not already initialized
 if (!getApps().length) {
+  const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
+  
+  if (!privateKey) {
+    throw new Error('FIREBASE_ADMIN_PRIVATE_KEY environment variable is not set');
+  }
+
   initializeApp({
     credential: cert({
       projectId: process.env.FIREBASE_ADMIN_PROJECT_ID,
       clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n') || '',
+      privateKey: privateKey,
     }),
   });
 }
