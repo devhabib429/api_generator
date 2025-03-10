@@ -7,19 +7,27 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 
 // Initialize Firebase Admin if not already initialized
 if (!getApps().length) {
-  const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
-  
-  if (!privateKey) {
-    throw new Error('FIREBASE_ADMIN_PRIVATE_KEY environment variable is not set');
-  }
+  try {
+    const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
+    const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
 
-  initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_ADMIN_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-      privateKey: privateKey,
-    }),
-  });
+    if (!projectId || !clientEmail || !privateKey) {
+      console.error('Firebase Admin credentials are not properly configured');
+      throw new Error('Firebase Admin credentials missing');
+    }
+
+    initializeApp({
+      credential: cert({
+        projectId,
+        clientEmail,
+        privateKey: privateKey.replace(/\\n/g, '\n'),
+      }),
+    });
+  } catch (error) {
+    console.error('Failed to initialize Firebase Admin:', error);
+    // Don't throw here, let the API routes handle the error
+  }
 }
 
 const CONFIG_DIR = path.join(process.cwd(), 'config');
@@ -71,12 +79,19 @@ type Context = {
   params: Promise<{ endpoint: string }>;
 };
 
+// Update verifyToken to handle uninitialized Firebase
 async function verifyToken(request: NextRequest) {
-  const token = request.headers.get('Authorization')?.split('Bearer ')[1];
-  if (!token) return null;
-
   try {
-    return await getAuth().verifyIdToken(token);
+    const token = request.headers.get('Authorization')?.split('Bearer ')[1];
+    if (!token) return null;
+    
+    const auth = getAuth();
+    if (!auth) {
+      console.error('Firebase Auth not initialized');
+      return null;
+    }
+
+    return await auth.verifyIdToken(token);
   } catch (error) {
     console.error('Error verifying token:', error);
     return null;
