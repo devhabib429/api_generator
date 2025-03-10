@@ -39,53 +39,43 @@ export default function Home() {
 
       const baseUrl = window.location.origin;
       
-      // First request to save the configuration
-      const configUrl = `${baseUrl}/api/${endpoint}/config`;
-      console.log('Making config request to:', configUrl);
-      const configResponse = await fetch(configUrl, {
+      // Save configuration directly to the endpoint
+      const apiUrl = `${baseUrl}/api/${endpoint}`;
+      console.log('Saving configuration to:', apiUrl);
+      const configResponse = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          endpoint: endpoint,
-          fields: fields
-        }),
+        body: JSON.stringify({ fields }),
       });
 
-      console.log('Config response status:', configResponse.status);
-      const configData = await configResponse.json();
-      console.log('Config response:', configData);
-
       if (!configResponse.ok) {
-        throw new Error(configData.error || 'Failed to save configuration');
+        const error = await configResponse.json();
+        throw new Error(error.message || 'Failed to save configuration');
       }
 
-      // Then make the actual API request
-      const apiUrl = `${baseUrl}/api/${endpoint}?count=${count}`;
-      setGeneratedUrl(apiUrl);
-      
-      const response = await fetch(apiUrl, {
+      // Generate preview data
+      const previewUrl = `${apiUrl}?count=${count}`;
+      const previewResponse = await fetch(previewUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch data');
+      if (!previewResponse.ok) {
+        const error = await previewResponse.json();
+        throw new Error(error.message || 'Failed to generate preview');
       }
 
-      const data = await response.json();
-      setPreviewData(data);
+      const preview = await previewResponse.json();
+      setGeneratedUrl(previewUrl);
+      setPreviewData(preview);
 
-      setTimeout(() => {
-        document.querySelector('#preview-section')?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
     } catch (error) {
-      console.error('Error in handleGenerate:', error);
-      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+      console.error('Error:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred');
     }
   };
 

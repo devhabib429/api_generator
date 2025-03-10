@@ -5,7 +5,6 @@ import { getAuth } from 'firebase-admin/auth';
 import { faker } from '@faker-js/faker';
 
 const CONFIG_DIR = path.join(process.cwd(), 'config');
-const CONFIG_FILE = path.join(CONFIG_DIR, 'api-configs.json');
 
 async function verifyToken(request: NextRequest) {
   try {
@@ -26,35 +25,17 @@ async function loadUserConfig(userId: string, endpoint: string) {
     const userConfigDir = path.join(CONFIG_DIR, userId);
     const configPath = path.join(userConfigDir, 'api-configs.json');
     const data = await fs.readFile(configPath, 'utf-8');
-    const configs = JSON.parse(data);
-    console.log('Loaded config:', configs[endpoint]);
+    const configs = JSON.parse(data) as ConfigType;
+    
+    // Debug logs
+    console.log('All configs:', configs);
+    console.log('Loading config for endpoint:', endpoint);
+    console.log('Fields received:', configs[endpoint]?.fields);
+    
     return configs[endpoint];
   } catch (error) {
     console.error('Error loading config:', error);
     return null;
-  }
-}
-
-// Function to load configurations
-async function loadConfigs() {
-  try {
-    await fs.mkdir(CONFIG_DIR, { recursive: true });
-    const data = await fs.readFile(CONFIG_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return {};
-  }
-}
-
-// Function to save configurations
-async function saveConfig(endpoint: string, fields: { name: string; type: string }[]) {
-  try {
-    await fs.mkdir(CONFIG_DIR, { recursive: true });
-    const configs = await loadConfigs();
-    configs[endpoint] = { fields };
-    await fs.writeFile(CONFIG_FILE, JSON.stringify(configs, null, 2));
-  } catch (error) {
-    console.error('Error saving config:', error);
   }
 }
 
@@ -66,6 +47,13 @@ type RouteContext = {
 // Add type for record values
 type RecordValue = string | number | boolean;
 type ApiRecord = Record<string, RecordValue>;
+
+// Add this type at the top with other types
+type ConfigType = {
+  [key: string]: {
+    fields: { name: string; type: string }[];
+  };
+};
 
 export async function GET(
   request: NextRequest,
@@ -80,79 +68,42 @@ export async function GET(
     const { endpoint } = await context.params;
     const url = new URL(request.url);
     
-    // Get selected fields and filters from query params
-    const selectParam = url.searchParams.get('select');
-    const selectedFields = selectParam ? selectParam.split(',') : [];
-    
-    // Get all query params for filtering
-    const filters: Record<string, string> = {};
-    url.searchParams.forEach((value, key) => {
-      if (!['select', 'count'].includes(key)) {
-        filters[key.toLowerCase()] = value.toLowerCase();
-      }
-    });
-
     // Load user-specific configuration
     const config = await loadUserConfig(decodedToken.uid, endpoint);
-    if (!config) {
+    console.log('Loaded config for endpoint:', endpoint, config);
+
+    if (!config || !config.fields) {
       return NextResponse.json({ error: 'Configuration not found' }, { status: 404 });
     }
-
-    console.log('Config loaded:', config);
 
     const countParam = url.searchParams.get('count');
     const count = countParam ? Math.max(1, parseInt(countParam)) : 100;
     const safeCount = Math.min(100, count);
 
-    // Generate records with field selection and filtering
-    let data = Array.from({ length: safeCount }, (_, index) => {
-      // Generate a consistent ID for each record based on endpoint and index
-      const recordId = `${endpoint}_${index + 1}`;
-      
-      const baseRecord = {
-        id: recordId,
+    // Generate records
+    const data = Array.from({ length: safeCount }, (_, index) => {
+      const record: Record<string, any> = {
+        id: `${endpoint}_${index + 1}`,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
-      const record: ApiRecord = selectedFields.length > 0 
-        ? { id: baseRecord.id }
-        : baseRecord;
-
+      // Make sure we process all fields from the config
       config.fields.forEach((field: { name: string; type: string }) => {
-        const fieldName = field.name;
-        if (selectedFields.length === 0 || selectedFields.includes(fieldName.toLowerCase())) {
-          const value = generateValue(field.type);
-          console.log(`Generated value for ${fieldName} (${field.type}):`, value);
-          record[fieldName] = value;
-        }
+        const value = generateValue(field.type);
+        console.log(`Generated value for ${field.name} (${field.type}):`, value);
+        record[field.name] = value;
       });
 
       return record;
     });
 
-    // Apply filters including id
-    if (Object.keys(filters).length > 0) {
-      data = data.filter(record => {
-        return Object.entries(filters).every(([key, value]) => {
-          const recordValue = String(record[key] || '').toLowerCase();
-          return recordValue.includes(value.toLowerCase());
-        });
-      });
-    }
-
     return NextResponse.json({
-      data: data.slice(0, safeCount),
+      data,
       pagination: {
         count: data.length,
         total: data.length
       }
-    }, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json',
-      },
     });
 
   } catch (error) {
@@ -231,24 +182,52 @@ export async function POST(
   context: RouteContext
 ) {
   try {
+    const decodedToken = await verifyToken(request);
+    if (!decodedToken) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { endpoint } = await context.params;
     const { fields } = await request.json();
 
-    await saveConfig(endpoint, fields);
+    // Validate endpoint and fields
+    if (!endpoint || !fields || !Array.isArray(fields)) {
+      console.error('Invalid request data:', { endpoint, fields });
+      return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
+    }
 
-    return NextResponse.json({ success: true }, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json',
-      },
-    });
+    console.log('Saving fields:', fields);
+
+    const userConfigDir = path.join(CONFIG_DIR, decodedToken.uid);
+    await fs.mkdir(userConfigDir, { recursive: true });
+    const configPath = path.join(userConfigDir, 'api-configs.json');
+
+    // Load or create config
+    let configs: ConfigType = {};
+    try {
+      const existingData = await fs.readFile(configPath, 'utf-8');
+      configs = JSON.parse(existingData) as ConfigType;
+    } catch (error) {
+      // File doesn't exist, start with empty object
+    }
+
+    // Update with new fields
+    configs[endpoint] = { fields };
+    
+    // Log before saving
+    console.log('Saving config:', { endpoint, fields });
+
+    // Save config
+    await fs.writeFile(configPath, JSON.stringify(configs, null, 2));
+
+    // Verify saved data
+    const savedConfig = await loadUserConfig(decodedToken.uid, endpoint);
+    console.log('Verified saved config:', savedConfig);
+
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error saving config:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
-    );
+    console.error('Error in POST handler:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 

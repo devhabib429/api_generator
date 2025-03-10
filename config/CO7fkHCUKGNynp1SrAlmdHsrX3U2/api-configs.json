@@ -8,6 +8,10 @@
       {
         "name": "email",
         "type": "email"
+      },
+      {
+        "name": "phone",
+        "type": "phone"
       }
     ]
   },

@@ -131,7 +131,8 @@ export default function ApiForm({
           <button
             onClick={() => {
               if (newFieldName) {
-                setFields([...fields, { name: newFieldName, type: newFieldType }]);
+                const newField = { name: newFieldName, type: newFieldType };
+                setFields([...fields, newField]);
                 setNewFieldName('');
               }
             }}

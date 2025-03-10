@@ -1,9 +1,14 @@
 {
   "users": {
+    "userId": "CO7fkHCUKGNynp1SrAlmdHsrX3U2",
     "fields": [
       {
         "name": "name",
         "type": "string"
+      },
+      {
+        "name": "phone",
+        "type": "phone"
       }
     ]
   },
