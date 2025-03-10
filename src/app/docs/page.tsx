@@ -164,6 +164,21 @@ Console.WriteLine(response.Content);`
                 </div>
               </div>
             </div>
+
+            <div className="p-6 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10">
+              <h3 className="text-xl font-medium text-white mb-4">Authentication</h3>
+              <div className="space-y-4">
+                <p className="text-white/70">
+                  All API requests require authentication using your API token. You can find your token in the navigation bar after logging in.
+                </p>
+                <div className="bg-black/30 p-4 rounded-lg">
+                  <pre className="text-sm text-white/70">
+                    {`curl "https://your-domain.com/api/users?count=5" \\
+  -H "Authorization: Bearer YOUR_API_TOKEN"`}
+                  </pre>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 

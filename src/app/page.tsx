@@ -4,35 +4,72 @@ import { useState } from 'react';
 import ApiForm from '@/components/ApiForm';
 import ApiPreview from '@/components/ApiPreview';
 import { Field } from '@/lib/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Home() {
+  const { user, signInWithGoogle, getAuthToken } = useAuth();
   const [endpoint, setEndpoint] = useState('');
   const [fields, setFields] = useState<Field[]>([]);
   const [count, setCount] = useState(1);
   const [generatedUrl, setGeneratedUrl] = useState('');
   const [previewData, setPreviewData] = useState<Record<string, unknown>>({});
+  const [error, setError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
     if (!endpoint || fields.length === 0) return;
+    setError(null);
+
+    if (!user) {
+      await signInWithGoogle();
+      return;
+    }
 
     try {
+      const token = await getAuthToken();
+      console.log('Got token:', token ? 'yes' : 'no');
+
+      if (!token) {
+        setError('Failed to get authentication token');
+        return;
+      }
+
       const baseUrl = window.location.origin;
       
       // First request to save the configuration
       const configUrl = `${baseUrl}/api/${endpoint}/config`;
-      await fetch(configUrl, {
+      console.log('Making config request to:', configUrl);
+      const configResponse = await fetch(configUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ fields }),
       });
 
-      // Then make the actual API request with just the count
+      console.log('Config response status:', configResponse.status);
+      const configData = await configResponse.json();
+      console.log('Config response:', configData);
+
+      if (!configResponse.ok) {
+        throw new Error(configData.error || 'Failed to save configuration');
+      }
+
+      // Then make the actual API request
       const apiUrl = `${baseUrl}/api/${endpoint}?count=${count}`;
       setGeneratedUrl(apiUrl);
       
-      const response = await fetch(apiUrl);
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch data');
+      }
+
       const data = await response.json();
       setPreviewData(data);
 
@@ -40,7 +77,8 @@ export default function Home() {
         document.querySelector('#preview-section')?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
     } catch (error) {
-      console.error('Error generating API:', error);
+      console.error('Error:', error);
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
     }
   };
 
@@ -168,41 +206,75 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Features Section */}
-      <div className="relative py-32 bg-gradient-to-b from-transparent via-blue-500/5 to-transparent">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: "⚡️",
-                title: "Lightning Fast",
-                description: "Generate APIs instantly with zero setup time"
-              },
-              {
-                icon: "🎯",
-                title: "Custom Fields",
-                description: "Define your own data structure with multiple field types"
-              },
-              {
-                icon: "🔄",
-                title: "Real-time Preview",
-                description: "See your API response instantly as you configure"
-              }
-            ].map((feature, i) => (
-              <div key={i} className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                <div className="relative bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 hover:border-blue-500/20 transition-all duration-500">
-                  <div className="text-4xl mb-4 group-hover:animate-bounce">{feature.icon}</div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-white/60">{feature.description}</p>
-                </div>
+      {/* Feature Cards */}
+      <div className="mt-24 mb-16">
+        <h2 className="text-3xl font-bold text-center mb-12 bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent">
+          Powerful Features for Modern APIs
+        </h2>
+        
+        <div className="grid md:grid-cols-3 gap-8">
+          {/* Lightning Fast Card */}
+          <div className="group relative p-8 rounded-2xl bg-gradient-to-b from-white/10 to-white/5 border border-white/10 backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/20">
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-yellow-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative">
+              <div className="w-12 h-12 mb-6 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center transform group-hover:scale-110 transition-transform">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
               </div>
-            ))}
+              <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-yellow-400 transition-colors">
+                Lightning Fast
+              </h3>
+              <p className="text-white/70 group-hover:text-white/90 transition-colors">
+                Generate APIs instantly with zero setup time. Get your endpoints up and running in seconds.
+              </p>
+            </div>
+          </div>
+
+          {/* Custom Fields Card */}
+          <div className="group relative p-8 rounded-2xl bg-gradient-to-b from-white/10 to-white/5 border border-white/10 backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20">
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative">
+              <div className="w-12 h-12 mb-6 rounded-2xl bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center transform group-hover:scale-110 transition-transform">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-blue-400 transition-colors">
+                Custom Fields
+              </h3>
+              <p className="text-white/70 group-hover:text-white/90 transition-colors">
+                Define your own data structure with multiple field types. Full control over your API response.
+              </p>
+            </div>
+          </div>
+
+          {/* Real-time Preview Card */}
+          <div className="group relative p-8 rounded-2xl bg-gradient-to-b from-white/10 to-white/5 border border-white/10 backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-500/20">
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-green-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative">
+              <div className="w-12 h-12 mb-6 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center transform group-hover:scale-110 transition-transform">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-green-400 transition-colors">
+                Real-time Preview
+              </h3>
+              <p className="text-white/70 group-hover:text-white/90 transition-colors">
+                See your API response instantly as you configure. Test and validate your endpoints in real-time.
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-     
+      {error && (
+        <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400">
+          {error}
+        </div>
+      )}
     </div>
   );
 }

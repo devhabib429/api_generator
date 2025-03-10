@@ -17,14 +17,14 @@ export default function ExamplesPage() {
         {/* Common API Examples */}
         <div className="grid gap-8 md:grid-cols-2">
           {/* User Management API */}
-          <div className="p-6 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10">
+          <div className="group p-6 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-blue-500/20">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-3 w-3 bg-blue-500 rounded-full"></div>
-              <h3 className="text-xl font-medium text-white">User Management API</h3>
+              <div className="h-3 w-3 bg-blue-500 rounded-full group-hover:animate-pulse"></div>
+              <h3 className="text-xl font-medium text-white group-hover:text-blue-400 transition-colors">User Management API</h3>
             </div>
             <div className="space-y-4">
-              <pre className="bg-black/30 p-4 rounded-lg overflow-x-auto">
-                <code className="text-sm text-white/70">
+              <pre className="bg-black/30 p-4 rounded-lg overflow-x-auto transition-colors group-hover:bg-black/40">
+                <code className="text-sm text-white/70 group-hover:text-white/90">
                   {`// Endpoint: /api/users
 {
   "id": "number",
@@ -39,8 +39,8 @@ export default function ExamplesPage() {
                 </code>
               </pre>
               <div className="text-sm text-white/50 space-y-2">
-                <p>Perfect for:</p>
-                <ul className="list-disc ml-4 space-y-1">
+                <p className="font-medium text-white/60">Perfect for:</p>
+                <ul className="list-disc ml-4 space-y-1 group-hover:text-white/60 transition-colors">
                   <li>User authentication systems</li>
                   <li>User profile pages</li>
                   <li>Admin dashboards</li>
@@ -50,10 +50,10 @@ export default function ExamplesPage() {
           </div>
 
           {/* E-commerce Product API */}
-          <div className="p-6 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10">
+          <div className="group p-6 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-green-500/20">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-3 w-3 bg-green-500 rounded-full"></div>
-              <h3 className="text-xl font-medium text-white">E-commerce Product API</h3>
+              <div className="h-3 w-3 bg-green-500 rounded-full group-hover:animate-pulse"></div>
+              <h3 className="text-xl font-medium text-white group-hover:text-green-400 transition-colors">E-commerce Product API</h3>
             </div>
             <div className="space-y-4">
               <pre className="bg-black/30 p-4 rounded-lg overflow-x-auto">
@@ -84,10 +84,10 @@ export default function ExamplesPage() {
           </div>
 
           {/* Blog Posts API */}
-          <div className="p-6 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10">
+          <div className="group p-6 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-purple-500/20">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-3 w-3 bg-purple-500 rounded-full"></div>
-              <h3 className="text-xl font-medium text-white">Blog Posts API</h3>
+              <div className="h-3 w-3 bg-purple-500 rounded-full group-hover:animate-pulse"></div>
+              <h3 className="text-xl font-medium text-white group-hover:text-purple-400 transition-colors">Blog Posts API</h3>
             </div>
             <div className="space-y-4">
               <pre className="bg-black/30 p-4 rounded-lg overflow-x-auto">
@@ -118,10 +118,10 @@ export default function ExamplesPage() {
           </div>
 
           {/* Task Management API */}
-          <div className="p-6 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10">
+          <div className="group p-6 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-yellow-500/20">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-3 w-3 bg-yellow-500 rounded-full"></div>
-              <h3 className="text-xl font-medium text-white">Task Management API</h3>
+              <div className="h-3 w-3 bg-yellow-500 rounded-full group-hover:animate-pulse"></div>
+              <h3 className="text-xl font-medium text-white group-hover:text-yellow-400 transition-colors">Task Management API</h3>
             </div>
             <div className="space-y-4">
               <pre className="bg-black/30 p-4 rounded-lg overflow-x-auto">
@@ -153,14 +153,24 @@ export default function ExamplesPage() {
         </div>
 
         {/* Usage Instructions */}
-        <div className="p-6 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10">
+        <div className="p-6 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20">
           <h3 className="text-xl font-medium text-white mb-4">How to Use These Examples</h3>
           <ol className="space-y-3 text-white/70">
-            <li>1. Copy the field configuration from any example above</li>
-            <li>2. Navigate to the homepage and create a new API</li>
-            <li>3. Paste the configuration into the fields section</li>
-            <li>4. Click "Generate API" to create your endpoint</li>
-            <li>5. Use the generated URL in your application</li>
+            <li className="transition-transform hover:translate-x-2">
+              <span className="font-medium text-blue-400">1.</span> Copy the field configuration from any example above
+            </li>
+            <li className="transition-transform hover:translate-x-2">
+              <span className="font-medium text-green-400">2.</span> Navigate to the homepage and create a new API
+            </li>
+            <li className="transition-transform hover:translate-x-2">
+              <span className="font-medium text-purple-400">3.</span> Paste the configuration into the fields section
+            </li>
+            <li className="transition-transform hover:translate-x-2">
+              <span className="font-medium text-yellow-400">4.</span> Click &quot;Generate API&quot; to create your endpoint
+            </li>
+            <li className="transition-transform hover:translate-x-2">
+              <span className="font-medium text-blue-400">5.</span> Use the generated URL in your application
+            </li>
           </ol>
         </div>
       </div>

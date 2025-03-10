@@ -7,34 +7,26 @@
       }
     ]
   },
-  "students": {
+  "product": {
     "fields": [
       {
         "name": "name",
         "type": "string"
       },
       {
-        "name": "roll number",
-        "type": "string"
-      },
-      {
-        "name": "email",
-        "type": "string"
-      },
-      {
-        "name": "phone",
+        "name": "qty",
         "type": "string"
       }
     ]
   },
-  "user": {
+  "products": {
     "fields": [
       {
         "name": "name",
         "type": "string"
       },
       {
-        "name": "email",
+        "name": "price",
         "type": "string"
       }
     ]

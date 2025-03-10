@@ -1,9 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
+import { getAuth } from 'firebase-admin/auth';
+import { faker } from '@faker-js/faker';
 
 const CONFIG_DIR = path.join(process.cwd(), 'config');
 const CONFIG_FILE = path.join(CONFIG_DIR, 'api-configs.json');
+
+async function verifyToken(request: NextRequest) {
+  try {
+    const token = request.headers.get('Authorization')?.split('Bearer ')[1];
+    if (!token) return null;
+    
+    const decodedToken = await getAuth().verifyIdToken(token);
+    return decodedToken;
+  } catch (error) {
+    console.error('Error verifying token:', error);
+    return null;
+  }
+}
+
+// Function to load user-specific configurations
+async function loadUserConfig(userId: string, endpoint: string) {
+  try {
+    const userConfigDir = path.join(CONFIG_DIR, userId);
+    const configPath = path.join(userConfigDir, 'api-configs.json');
+    const data = await fs.readFile(configPath, 'utf-8');
+    const configs = JSON.parse(data);
+    return configs[endpoint];
+  } catch {
+    return null;
+  }
+}
 
 // Function to load configurations
 async function loadConfigs() {
@@ -36,6 +64,12 @@ type ApiRecord = Record<string, RecordValue>;
 
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
+    // Verify token first
+    const decodedToken = await verifyToken(request);
+    if (!decodedToken) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { endpoint } = await context.params;
     const url = new URL(request.url);
     
@@ -51,14 +85,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
       }
     });
 
-    const configs = await loadConfigs();
-    const storedConfig = configs[endpoint];
-    
-    if (!storedConfig) {
-      return NextResponse.json(
-        { error: 'API configuration not found' },
-        { status: 404 }
-      );
+    // Load user-specific configuration
+    const config = await loadUserConfig(decodedToken.uid, endpoint);
+    if (!config) {
+      return NextResponse.json({ error: 'Configuration not found' }, { status: 404 });
     }
 
     const countParam = url.searchParams.get('count');
@@ -80,7 +110,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         ? { id: baseRecord.id }
         : baseRecord;
 
-      storedConfig.fields.forEach((field: { name: string; type: string }) => {
+      config.fields.forEach((field: { name: string; type: string }) => {
         const fieldName = field.name.toLowerCase();
         if (selectedFields.length === 0 || selectedFields.includes(fieldName)) {
           record[fieldName] = generateFieldValue(fieldName, field.type, index + 1);
@@ -115,11 +145,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
     });
 
   } catch (error) {
-    console.error('API Error:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
-    );
+    console.error('Error generating data:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
@@ -174,12 +201,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function OPTIONS(_request: NextRequest, _context: RouteContext) {
+export async function OPTIONS(request: NextRequest) {
   return NextResponse.json({}, {
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });

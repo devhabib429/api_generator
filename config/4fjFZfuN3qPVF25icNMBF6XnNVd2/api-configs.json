@@ -1,0 +1,30 @@
+{
+  "products": {
+    "fields": [
+      {
+        "name": "product",
+        "type": "string"
+      },
+      {
+        "name": "quantity",
+        "type": "number"
+      },
+      {
+        "name": "price",
+        "type": "number"
+      }
+    ]
+  },
+  "users": {
+    "fields": [
+      {
+        "name": "students",
+        "type": "string"
+      },
+      {
+        "name": "roll_number",
+        "type": "number"
+      }
+    ]
+  }
+}

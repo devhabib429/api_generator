@@ -2,95 +2,118 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 import type { NextRequest } from 'next/server';
+import { getAuth } from 'firebase-admin/auth';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+
+// Initialize Firebase Admin if not already initialized
+if (!getApps().length) {
+  initializeApp({
+    credential: cert({
+      projectId: process.env.FIREBASE_ADMIN_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n') || '',
+    }),
+  });
+}
 
 const CONFIG_DIR = path.join(process.cwd(), 'config');
-const CONFIG_FILE = path.join(CONFIG_DIR, 'api-configs.json');
 
-// Function to load configurations
-async function loadConfigs() {
+// Function to load user-specific configurations
+async function loadConfigs(userId: string) {
+  const userConfigDir = path.join(CONFIG_DIR, userId);
+  await fs.mkdir(userConfigDir, { recursive: true });
+  const configPath = path.join(userConfigDir, 'api-configs.json');
+
   try {
-    await fs.mkdir(CONFIG_DIR, { recursive: true });
-    const data = await fs.readFile(CONFIG_FILE, 'utf-8');
+    const data = await fs.readFile(configPath, 'utf-8');
     return JSON.parse(data);
-  } catch {
+  } catch (error) {
+    console.error('Error reading config file:', error);
     return {};
   }
 }
 
-// Function to save configurations
-async function saveConfig(endpoint: string, fields: { name: string; type: string }[]) {
-  try {
-    await fs.mkdir(CONFIG_DIR, { recursive: true });
-    const configs = await loadConfigs();
-    configs[endpoint] = { fields };
-    await fs.writeFile(CONFIG_FILE, JSON.stringify(configs, null, 2));
-  } catch (error) {
-    console.error('Error saving config:', error);
-  }
+// Function to save user-specific configurations
+async function saveConfig(userId: string, endpoint: string, config: any) {
+  const userConfigDir = path.join(CONFIG_DIR, userId);
+  await fs.mkdir(userConfigDir, { recursive: true });
+  const configPath = path.join(userConfigDir, 'api-configs.json');
+
+  const existingConfigs = await loadConfigs(userId);
+  existingConfigs[endpoint] = config;
+
+  await fs.writeFile(configPath, JSON.stringify(existingConfigs, null, 2));
 }
 
 type Context = {
-  params: { endpoint: string } & Promise<{ endpoint: string }>;
+  params: { endpoint: string };
 };
 
-export async function POST(request: NextRequest, context: Context) {
-  const { endpoint } = context.params;
+async function verifyToken(request: NextRequest) {
+  const token = request.headers.get('Authorization')?.split('Bearer ')[1];
+  if (!token) return null;
+
   try {
-    const { fields } = await request.json();
-
-    await saveConfig(endpoint, fields);
-
-    return NextResponse.json({ success: true }, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json',
-      },
-    });
+    return await getAuth().verifyIdToken(token);
   } catch (error) {
-    console.error('Error saving config:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
-    );
+    console.error('Error verifying token:', error);
+    return null;
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const token = request.headers.get('Authorization')?.split('Bearer ')[1];
+    if (!token) {
+      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
+    }
+
+    const decodedToken = await verifyToken(request);
+    if (!decodedToken) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    console.log('Received request body:', body);
+    console.log('User ID:', decodedToken.uid);
+
+    // Save the configuration (assuming body contains the necessary data)
+    await saveConfig(decodedToken.uid, body.endpoint, body.config);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Auth Error:', error);
+    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
   }
 }
 
 export async function GET(request: NextRequest, context: Context) {
-  const { endpoint } = context.params;
   try {
-    const configs = await loadConfigs();
+    const decodedToken = await verifyToken(request);
+    if (!decodedToken) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { endpoint } = context.params;
+    const configs = await loadConfigs(decodedToken.uid);
     const config = configs[endpoint];
 
     if (!config) {
-      return NextResponse.json(
-        { error: 'Configuration not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Configuration not found' }, { status: 404 });
     }
 
-    return NextResponse.json(config, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json',
-      },
-    });
+    return NextResponse.json(config);
   } catch (error) {
     console.error('Error loading config:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function OPTIONS(_request: NextRequest, _context: Context) {
+export async function OPTIONS() {
   return NextResponse.json({}, {
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });
