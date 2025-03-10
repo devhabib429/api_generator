@@ -12,14 +12,6 @@
       {
         "name": "phone",
         "type": "phone"
-      },
-      {
-        "name": "fathername",
-        "type": "string"
-      },
-      {
-        "name": "address",
-        "type": "address"
       }
     ]
   },

@@ -58,15 +58,20 @@ async function saveConfig(endpoint: string, fields: { name: string; type: string
   }
 }
 
-type RouteContext = { params: Promise<{ endpoint: string }> };
+// Update the RouteContext type to match Next.js expectations
+type RouteContext = {
+  params: Promise<{ endpoint: string }>
+};
 
 // Add type for record values
 type RecordValue = string | number | boolean;
 type ApiRecord = Record<string, RecordValue>;
 
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(
+  request: NextRequest,
+  context: RouteContext
+) {
   try {
-    // Verify token first
     const decodedToken = await verifyToken(request);
     if (!decodedToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -156,7 +161,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }
 }
 
-function generateValue(type: string): any {
+function generateValue(type: string): RecordValue {
   const lowercaseType = type.toLowerCase();
   console.log('Generating value for type:', lowercaseType);
 
@@ -221,7 +226,10 @@ function generateValue(type: string): any {
   }
 }
 
-export async function POST(request: NextRequest, context: RouteContext) {
+export async function POST(
+  request: NextRequest,
+  context: RouteContext
+) {
   try {
     const { endpoint } = await context.params;
     const { fields } = await request.json();
@@ -244,7 +252,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   }
 }
 
-export async function OPTIONS(request: NextRequest) {
+export async function OPTIONS() {
   return NextResponse.json({}, {
     headers: {
       'Access-Control-Allow-Origin': '*',

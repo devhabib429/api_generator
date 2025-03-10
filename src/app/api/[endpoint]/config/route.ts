@@ -52,8 +52,9 @@ async function saveConfig(userId: string, endpoint: string, config: Config) {
   try {
     const data = await fs.readFile(configPath, 'utf-8');
     existingConfigs = JSON.parse(data);
-  } catch (error) {
-    // File doesn't exist or is invalid, start with empty object
+  } catch {
+    // If file doesn't exist, we'll create it with an empty object
+    console.log('Creating new config file');
   }
 
   existingConfigs[endpoint] = config;
@@ -61,7 +62,7 @@ async function saveConfig(userId: string, endpoint: string, config: Config) {
 }
 
 type Context = {
-  params: { endpoint: string };
+  params: Promise<{ endpoint: string }>;
 };
 
 async function verifyToken(request: NextRequest) {
@@ -117,7 +118,7 @@ export async function GET(request: NextRequest, context: Context) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { endpoint } = context.params;
+    const { endpoint } = await context.params;
     const configs = await loadConfigs(decodedToken.uid);
     const config = configs[endpoint];
 
@@ -126,9 +127,11 @@ export async function GET(request: NextRequest, context: Context) {
     }
 
     return NextResponse.json(config);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error loading config:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ 
+      error: error instanceof Error ? error.message : 'Internal Server Error' 
+    }, { status: 500 });
   }
 }
 

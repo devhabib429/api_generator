@@ -6,8 +6,7 @@ import {
   signInWithPopup, 
   onAuthStateChanged, 
   signOut,
-  User,
-  Auth 
+  User
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
