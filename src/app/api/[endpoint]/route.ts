@@ -3,15 +3,23 @@ import fs from 'fs/promises';
 import path from 'path';
 import { getAuth } from 'firebase-admin/auth';
 import { faker } from '@faker-js/faker';
+import { initAdmin } from '@/lib/firebase-admin';
+
+// Initialize Firebase Admin at the top of the file
+initAdmin();
 
 const CONFIG_DIR = path.join(process.cwd(), 'config');
 
 async function verifyToken(request: NextRequest) {
   try {
     const token = request.headers.get('Authorization')?.split('Bearer ')[1];
-    if (!token) return null;
+    if (!token) {
+      console.log('No token provided');
+      return null;
+    }
     
     const decodedToken = await getAuth().verifyIdToken(token);
+    console.log('Token verified successfully');
     return decodedToken;
   } catch (error) {
     console.error('Error verifying token:', error);
@@ -39,6 +47,11 @@ async function loadUserConfig(userId: string, endpoint: string) {
   }
 }
 
+// Update the RouteContext type to match Next.js expectations
+type RouteContext = {
+  params: Promise<{ endpoint: string }>
+};
+
 // Add type for record values
 type RecordValue = string | number | boolean;
 type ApiRecord = Record<string, RecordValue>;
@@ -52,7 +65,7 @@ type ConfigType = {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { endpoint: string } }
+  context: RouteContext
 ) {
   try {
     const decodedToken = await verifyToken(request);
@@ -60,9 +73,9 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { endpoint } = params;
+    const { endpoint } = await context.params;
     const url = new URL(request.url);
-    
+
     // Load user-specific configuration
     const config = await loadUserConfig(decodedToken.uid, endpoint);
     console.log('Loaded config for endpoint:', endpoint, config);
@@ -174,35 +187,25 @@ function generateValue(type: string): RecordValue {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { endpoint: string } }
+  context: RouteContext
 ) {
   try {
-    const headers = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    };
-
     const decodedToken = await verifyToken(request);
     if (!decodedToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { endpoint } = params;
+    const { endpoint } = await context.params;
     const { fields } = await request.json();
 
     // Validate endpoint and fields
     if (!endpoint || !fields || !Array.isArray(fields)) {
       console.error('Invalid request data:', { endpoint, fields });
-      return NextResponse.json(
-        { error: 'Invalid request data' }, 
-        { status: 400, headers }
-      );
+      return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
     }
 
     console.log('Saving fields:', fields);
 
-    // Ensure config directory exists
     const userConfigDir = path.join(CONFIG_DIR, decodedToken.uid);
     await fs.mkdir(userConfigDir, { recursive: true });
     const configPath = path.join(userConfigDir, 'api-configs.json');
@@ -214,7 +217,6 @@ export async function POST(
       configs = JSON.parse(existingData) as ConfigType;
     } catch (error) {
       // File doesn't exist, start with empty object
-      console.log('Creating new config file');
     }
 
     // Update with new fields
@@ -230,17 +232,10 @@ export async function POST(
     const savedConfig = await loadUserConfig(decodedToken.uid, endpoint);
     console.log('Verified saved config:', savedConfig);
 
-    return NextResponse.json({ success: true }, { headers });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error in POST handler:', error);
-    return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' }, 
-      { status: 500, headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      }}
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -248,7 +243,7 @@ export async function OPTIONS() {
   return NextResponse.json({}, {
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });

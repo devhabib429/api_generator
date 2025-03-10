@@ -20,14 +20,14 @@ export default function Home() {
     setError(null);
 
     try {
-      if (!user) {
+    if (!user) {
         console.log('No user, attempting sign in...');
-        await signInWithGoogle();
+      await signInWithGoogle();
         if (!user) {
           console.log('Sign in failed or was cancelled');
-          return;
+      return;
         }
-      }
+    }
 
       const token = await getAuthToken();
       console.log('Auth token obtained:', !!token);
@@ -51,10 +51,9 @@ export default function Home() {
         body: JSON.stringify({ fields }),
       });
 
-      const responseData = await configResponse.json();
-
       if (!configResponse.ok) {
-        throw new Error(responseData.error || responseData.details || 'Failed to save configuration');
+        const error = await configResponse.json();
+        throw new Error(error.message || 'Failed to save configuration');
       }
 
       // Generate preview data
@@ -67,7 +66,7 @@ export default function Home() {
 
       if (!previewResponse.ok) {
         const error = await previewResponse.json();
-        throw new Error(error.error || error.details || 'Failed to generate preview');
+        throw new Error(error.message || 'Failed to generate preview');
       }
 
       const preview = await previewResponse.json();
@@ -210,7 +209,7 @@ export default function Home() {
           Powerful Features for Modern APIs
         </h2>
         
-        <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
           {/* Lightning Fast Card */}
           <div className="group relative p-8 rounded-2xl bg-gradient-to-b from-white/10 to-white/5 border border-white/10 backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/20">
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-yellow-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -245,7 +244,7 @@ export default function Home() {
                 Define your own data structure with multiple field types. Full control over your API response.
               </p>
             </div>
-          </div>
+                </div>
 
           {/* Real-time Preview Card */}
           <div className="group relative p-8 rounded-2xl bg-gradient-to-b from-white/10 to-white/5 border border-white/10 backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-500/20">

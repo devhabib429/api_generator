@@ -3,15 +3,11 @@
     "fields": [
       {
         "name": "name",
+        "type": "username"
+      },
+      {
+        "name": "password",
         "type": "string"
-      },
-      {
-        "name": "email",
-        "type": "email"
-      },
-      {
-        "name": "phone",
-        "type": "phone"
       }
     ]
   },
