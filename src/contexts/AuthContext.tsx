@@ -13,7 +13,7 @@ import { auth } from '@/lib/firebase';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: () => Promise<User | undefined>;
   logout: () => Promise<void>;
   getAuthToken: () => Promise<string | null>;
   apiToken: string | null;
@@ -45,9 +45,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signInWithGoogle = async () => {
-    if (!auth) return;
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    try {
+      if (!auth) {
+        console.error('Firebase auth not initialized');
+        return;
+      }
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+      const result = await signInWithPopup(auth, provider);
+      return result.user;
+    } catch (error) {
+      console.error('Google Sign-In Error:', error);
+      throw error;
+    }
   };
 
   const logout = async () => {
