@@ -27,8 +27,10 @@ async function loadUserConfig(userId: string, endpoint: string) {
     const configPath = path.join(userConfigDir, 'api-configs.json');
     const data = await fs.readFile(configPath, 'utf-8');
     const configs = JSON.parse(data);
+    console.log('Loaded config:', configs[endpoint]);
     return configs[endpoint];
-  } catch {
+  } catch (error) {
+    console.error('Error loading config:', error);
     return null;
   }
 }
@@ -91,6 +93,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Configuration not found' }, { status: 404 });
     }
 
+    console.log('Config loaded:', config);
+
     const countParam = url.searchParams.get('count');
     const count = countParam ? Math.max(1, parseInt(countParam)) : 100;
     const safeCount = Math.min(100, count);
@@ -111,9 +115,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
         : baseRecord;
 
       config.fields.forEach((field: { name: string; type: string }) => {
-        const fieldName = field.name.toLowerCase();
-        if (selectedFields.length === 0 || selectedFields.includes(fieldName)) {
-          record[fieldName] = generateFieldValue(fieldName, field.type, index + 1);
+        const fieldName = field.name;
+        if (selectedFields.length === 0 || selectedFields.includes(fieldName.toLowerCase())) {
+          const value = generateValue(field.type);
+          console.log(`Generated value for ${fieldName} (${field.type}):`, value);
+          record[fieldName] = value;
         }
       });
 
@@ -150,31 +156,68 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }
 }
 
-function generateFieldValue(fieldName: string, type: string, index: number): RecordValue {
-  // Generate values based on field name and type
-  if (fieldName.includes('name')) {
-    return `John Doe ${index}`;
-  }
-  if (fieldName.includes('email')) {
-    return `john.doe${index}@example.com`;
-  }
-  if (fieldName.includes('phone')) {
-    return `+1 (555) ${String(index).padStart(3, '0')}-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`;
-  }
-  if (fieldName.includes('address')) {
-    return `${index} Main St, City, Country`;
-  }
+function generateValue(type: string): any {
+  const lowercaseType = type.toLowerCase();
+  console.log('Generating value for type:', lowercaseType);
 
-  // Fallback to type-based generation
-  switch (type.toLowerCase()) {
+  switch (lowercaseType) {
+    // Basic Types
     case 'string':
-      return `Sample Text ${index}`;
+      return faker.lorem.word();
     case 'number':
-      return index;
+      return faker.number.int(1000);
     case 'boolean':
-      return Boolean(index % 2);
+      return faker.datatype.boolean();
+    case 'date':
+      return faker.date.recent().toISOString();
+      
+    // Special Types
+    case 'email':
+      return faker.internet.email();
+    case 'phone':
+      return faker.phone.number();
+    case 'url':
+      return faker.internet.url();
+    case 'uuid':
+      return faker.string.uuid();
+      
+    // Content Types
+    case 'firstname':
+    case 'firstName':  // Match both camelCase and lowercase
+      return faker.person.firstName();
+    case 'lastname':
+    case 'lastName':   // Match both camelCase and lowercase
+      return faker.person.lastName();
+    case 'fullname':
+    case 'fullName':   // Match both camelCase and lowercase
+      return faker.person.fullName();
+    case 'username':
+      return faker.internet.userName();
+    case 'company':
+      return faker.company.name();
+    case 'address':
+      return faker.location.streetAddress();
+    case 'city':
+      return faker.location.city();
+    case 'country':
+      return faker.location.country();
+    case 'zipcode':
+    case 'zipCode':    // Match both camelCase and lowercase
+      return faker.location.zipCode();
+      
+    // Technical Types
+    case 'ipv4':
+      return faker.internet.ipv4();
+    case 'ipv6':
+      return faker.internet.ipv6();
+    case 'mac':
+      return faker.internet.mac();
+    case 'color':
+      return faker.internet.color();
+      
     default:
-      return `Value ${index}`;
+      console.log('Unmatched type:', type);
+      return faker.lorem.word();
   }
 }
 

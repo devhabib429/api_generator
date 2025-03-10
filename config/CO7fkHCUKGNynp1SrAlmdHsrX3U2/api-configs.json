@@ -4,6 +4,22 @@
       {
         "name": "name",
         "type": "string"
+      },
+      {
+        "name": "email",
+        "type": "email"
+      },
+      {
+        "name": "phone",
+        "type": "phone"
+      },
+      {
+        "name": "fathername",
+        "type": "string"
+      },
+      {
+        "name": "address",
+        "type": "address"
       }
     ]
   },
@@ -28,6 +44,22 @@
       {
         "name": "price",
         "type": "string"
+      }
+    ]
+  },
+  "undefined": {
+    "fields": [
+      {
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "name": "email",
+        "type": "email"
+      },
+      {
+        "name": "phone",
+        "type": "phone"
       }
     ]
   }

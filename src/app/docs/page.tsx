@@ -69,15 +69,143 @@ Console.WriteLine(response.Content);`
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
-      <div className="space-y-12">
+      <div className="space-y-16">
         {/* Header */}
         <div className="space-y-4">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
             Documentation
           </h1>
           <p className="text-lg text-white/70">
-            Learn how to use API Generator to create and manage your mock APIs. Follow our comprehensive guide to get started.
+            Learn how to use the API Generator effectively with our comprehensive documentation.
           </p>
+        </div>
+
+        {/* Field Types Reference */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-semibold text-white">Available Field Types</h2>
+          <p className="text-white/70">
+            Use these field types to define the structure of your API response. Each type generates appropriate mock data.
+          </p>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Basic Types */}
+            <div className="p-6 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10">
+              <h3 className="text-xl font-medium text-white mb-4">Basic Types</h3>
+              <div className="space-y-4">
+                <div className="group">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                    <code className="text-blue-400 font-mono">string</code>
+                  </div>
+                  <p className="text-sm text-white/60 pl-4">Generates random text strings</p>
+                </div>
+
+                <div className="group">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                    <code className="text-green-400 font-mono">number</code>
+                  </div>
+                  <p className="text-sm text-white/60 pl-4">Generates random numerical values</p>
+                </div>
+
+                <div className="group">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-2 w-2 bg-yellow-500 rounded-full"></div>
+                    <code className="text-yellow-400 font-mono">boolean</code>
+                  </div>
+                  <p className="text-sm text-white/60 pl-4">Generates true/false values</p>
+                </div>
+
+                <div className="group">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-2 w-2 bg-purple-500 rounded-full"></div>
+                    <code className="text-purple-400 font-mono">date</code>
+                  </div>
+                  <p className="text-sm text-white/60 pl-4">Generates random dates in ISO format</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Special Types */}
+            <div className="p-6 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10">
+              <h3 className="text-xl font-medium text-white mb-4">Special Types</h3>
+              <div className="space-y-4">
+                <div className="group">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-2 w-2 bg-pink-500 rounded-full"></div>
+                    <code className="text-pink-400 font-mono">email</code>
+                  </div>
+                  <p className="text-sm text-white/60 pl-4">Generates realistic email addresses</p>
+                </div>
+
+                <div className="group">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
+                    <code className="text-orange-400 font-mono">phone</code>
+                  </div>
+                  <p className="text-sm text-white/60 pl-4">Generates formatted phone numbers</p>
+                </div>
+
+                <div className="group">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-2 w-2 bg-cyan-500 rounded-full"></div>
+                    <code className="text-cyan-400 font-mono">url</code>
+                  </div>
+                  <p className="text-sm text-white/60 pl-4">Generates valid URLs</p>
+                </div>
+
+                <div className="group">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-2 w-2 bg-red-500 rounded-full"></div>
+                    <code className="text-red-400 font-mono">uuid</code>
+                  </div>
+                  <p className="text-sm text-white/60 pl-4">Generates unique identifiers</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Usage Examples */}
+          <div className="mt-8 p-6 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10">
+            <h3 className="text-xl font-medium text-white mb-4">Example Usage</h3>
+            <pre className="bg-black/30 p-4 rounded-lg overflow-x-auto">
+              <code className="text-sm text-white/70">
+{`{
+  "id": "uuid",
+  "fullName": "string",
+  "email": "email",
+  "phoneNumber": "phone",
+  "age": "number",
+  "isActive": "boolean",
+  "website": "url",
+  "createdAt": "date"
+}`}
+              </code>
+            </pre>
+          </div>
+
+          {/* Field Naming Tips */}
+          <div className="p-6 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10">
+            <h3 className="text-xl font-medium text-white mb-4">Field Naming Tips</h3>
+            <ul className="space-y-3 text-white/70">
+              <li className="flex items-center gap-2">
+                <span className="text-green-400">✓</span>
+                Use descriptive names that reflect the data content
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-green-400">✓</span>
+                Follow camelCase naming convention
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-green-400">✓</span>
+                Keep names concise but meaningful
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-red-400">✗</span>
+                Avoid spaces or special characters
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* Getting Started */}

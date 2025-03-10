@@ -44,7 +44,10 @@ export default function Home() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ fields }),
+        body: JSON.stringify({
+          endpoint: endpoint,
+          fields: fields
+        }),
       });
 
       console.log('Config response status:', configResponse.status);

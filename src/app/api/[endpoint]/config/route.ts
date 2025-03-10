@@ -18,8 +18,17 @@ if (!getApps().length) {
 
 const CONFIG_DIR = path.join(process.cwd(), 'config');
 
+// Add at the top with other type definitions
+type Config = {
+  fields: { name: string; type: string; }[];
+};
+
+type Configs = {
+  [key: string]: Config;
+};
+
 // Function to load user-specific configurations
-async function loadConfigs(userId: string) {
+async function loadConfigs(userId: string): Promise<Configs> {
   const userConfigDir = path.join(CONFIG_DIR, userId);
   await fs.mkdir(userConfigDir, { recursive: true });
   const configPath = path.join(userConfigDir, 'api-configs.json');
@@ -34,14 +43,20 @@ async function loadConfigs(userId: string) {
 }
 
 // Function to save user-specific configurations
-async function saveConfig(userId: string, endpoint: string, config: any) {
+async function saveConfig(userId: string, endpoint: string, config: Config) {
   const userConfigDir = path.join(CONFIG_DIR, userId);
   await fs.mkdir(userConfigDir, { recursive: true });
   const configPath = path.join(userConfigDir, 'api-configs.json');
 
-  const existingConfigs = await loadConfigs(userId);
-  existingConfigs[endpoint] = config;
+  let existingConfigs: Configs = {};
+  try {
+    const data = await fs.readFile(configPath, 'utf-8');
+    existingConfigs = JSON.parse(data);
+  } catch (error) {
+    // File doesn't exist or is invalid, start with empty object
+  }
 
+  existingConfigs[endpoint] = config;
   await fs.writeFile(configPath, JSON.stringify(existingConfigs, null, 2));
 }
 
@@ -74,15 +89,23 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    console.log('Received request body:', body);
-    console.log('User ID:', decodedToken.uid);
+    console.log('Received fields:', body.fields); // Debug log
 
-    // Save the configuration (assuming body contains the necessary data)
-    await saveConfig(decodedToken.uid, body.endpoint, body.config);
+    if (!Array.isArray(body.fields)) {
+      console.error('Fields is not an array:', body.fields);
+      return NextResponse.json({ error: 'Invalid fields format' }, { status: 400 });
+    }
+
+    const config: Config = {
+      fields: body.fields
+    };
+
+    await saveConfig(decodedToken.uid, body.endpoint, config);
+    console.log('Saved config:', config); // Debug log
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Auth Error:', error);
+    console.error('Save Error:', error);
     return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
   }
 }

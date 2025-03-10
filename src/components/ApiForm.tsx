@@ -91,10 +91,42 @@ export default function ApiForm({
                      focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/10
                      transition-all duration-300"
           >
-            <option value="string">String</option>
-            <option value="number">Number</option>
-            <option value="boolean">Boolean</option>
-            <option value="email">Email</option>
+            {/* Basic Types */}
+            <optgroup label="Basic Types">
+              <option value="string">String</option>
+              <option value="number">Number</option>
+              <option value="boolean">Boolean</option>
+              <option value="date">Date</option>
+            </optgroup>
+
+            {/* Special Types */}
+            <optgroup label="Special Types">
+              <option value="email">Email</option>
+              <option value="phone">Phone</option>
+              <option value="url">URL</option>
+              <option value="uuid">UUID</option>
+            </optgroup>
+
+            {/* Content Types */}
+            <optgroup label="Content Types">
+              <option value="firstName">First Name</option>
+              <option value="lastName">Last Name</option>
+              <option value="fullName">Full Name</option>
+              <option value="username">Username</option>
+              <option value="company">Company</option>
+              <option value="address">Address</option>
+              <option value="city">City</option>
+              <option value="country">Country</option>
+              <option value="zipCode">Zip Code</option>
+            </optgroup>
+
+            {/* Technical Types */}
+            <optgroup label="Technical Types">
+              <option value="ipv4">IPv4</option>
+              <option value="ipv6">IPv6</option>
+              <option value="mac">MAC Address</option>
+              <option value="color">Color</option>
+            </optgroup>
           </select>
           <button
             onClick={() => {
