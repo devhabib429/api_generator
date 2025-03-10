@@ -28,9 +28,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [apiToken, setApiToken] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!auth) return;
+    if (!auth) {
+      console.error('Auth not initialized in AuthContext');
+      return;
+    }
     
+    console.log('Setting up auth state listener...');
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log('Auth state changed:', !!user);
       setUser(user);
       if (user) {
         const token = await user.getIdToken();
@@ -48,17 +53,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       if (!auth) {
         console.error('Firebase auth not initialized');
-        return;
+        throw new Error('Authentication service not available');
       }
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({
         prompt: 'select_account'
       });
+      console.log('Starting Google sign in...');
       const result = await signInWithPopup(auth, provider);
+      console.log('Sign in successful:', !!result.user);
       return result.user;
     } catch (error) {
       console.error('Google Sign-In Error:', error);
-      throw error;
+      if (error instanceof Error) {
+        throw new Error(`Sign in failed: ${error.message}`);
+      }
+      throw new Error('Sign in failed');
     }
   };
 

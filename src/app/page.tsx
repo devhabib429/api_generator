@@ -19,14 +19,18 @@ export default function Home() {
     if (!endpoint || fields.length === 0) return;
     setError(null);
 
-    if (!user) {
-      await signInWithGoogle();
-      return;
-    }
-
     try {
+      if (!user) {
+        console.log('No user, attempting sign in...');
+        await signInWithGoogle();
+        if (!user) {
+          console.log('Sign in failed or was cancelled');
+          return;
+        }
+      }
+
       const token = await getAuthToken();
-      console.log('Got token:', token ? 'yes' : 'no');
+      console.log('Auth token obtained:', !!token);
 
       if (!token) {
         setError('Failed to get authentication token');
@@ -80,7 +84,7 @@ export default function Home() {
         document.querySelector('#preview-section')?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error in handleGenerate:', error);
       setError(error instanceof Error ? error.message : 'An unexpected error occurred');
     }
   };
