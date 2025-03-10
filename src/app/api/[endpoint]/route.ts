@@ -39,11 +39,6 @@ async function loadUserConfig(userId: string, endpoint: string) {
   }
 }
 
-// Update the RouteContext type
-type RouteContext = {
-  params: { endpoint: string }
-};
-
 // Add type for record values
 type RecordValue = string | number | boolean;
 type ApiRecord = Record<string, RecordValue>;
@@ -57,7 +52,7 @@ type ConfigType = {
 
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: { endpoint: string } }
 ) {
   try {
     const decodedToken = await verifyToken(request);
@@ -65,7 +60,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { endpoint } = context.params;
+    const { endpoint } = params;
     const url = new URL(request.url);
     
     // Load user-specific configuration
@@ -177,7 +172,10 @@ function generateValue(type: string): RecordValue {
   }
 }
 
-export async function POST(request: NextRequest, { params }: RouteContext) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { endpoint: string } }
+) {
   try {
     const headers = {
       'Access-Control-Allow-Origin': '*',
