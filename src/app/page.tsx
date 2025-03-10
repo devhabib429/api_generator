@@ -51,9 +51,10 @@ export default function Home() {
         body: JSON.stringify({ fields }),
       });
 
+      const responseData = await configResponse.json();
+
       if (!configResponse.ok) {
-        const error = await configResponse.json();
-        throw new Error(error.message || 'Failed to save configuration');
+        throw new Error(responseData.error || responseData.details || 'Failed to save configuration');
       }
 
       // Generate preview data
@@ -66,7 +67,7 @@ export default function Home() {
 
       if (!previewResponse.ok) {
         const error = await previewResponse.json();
-        throw new Error(error.message || 'Failed to generate preview');
+        throw new Error(error.error || error.details || 'Failed to generate preview');
       }
 
       const preview = await previewResponse.json();

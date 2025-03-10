@@ -39,9 +39,9 @@ async function loadUserConfig(userId: string, endpoint: string) {
   }
 }
 
-// Update the RouteContext type to match Next.js expectations
+// Update the RouteContext type
 type RouteContext = {
-  params: Promise<{ endpoint: string }>
+  params: { endpoint: string }
 };
 
 // Add type for record values
@@ -65,7 +65,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { endpoint } = await context.params;
+    const { endpoint } = context.params;
     const url = new URL(request.url);
     
     // Load user-specific configuration
@@ -177,27 +177,34 @@ function generateValue(type: string): RecordValue {
   }
 }
 
-export async function POST(
-  request: NextRequest,
-  context: RouteContext
-) {
+export async function POST(request: NextRequest, { params }: RouteContext) {
   try {
+    const headers = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    };
+
     const decodedToken = await verifyToken(request);
     if (!decodedToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers });
     }
 
-    const { endpoint } = await context.params;
+    const { endpoint } = params;
     const { fields } = await request.json();
 
     // Validate endpoint and fields
     if (!endpoint || !fields || !Array.isArray(fields)) {
       console.error('Invalid request data:', { endpoint, fields });
-      return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid request data' }, 
+        { status: 400, headers }
+      );
     }
 
     console.log('Saving fields:', fields);
 
+    // Ensure config directory exists
     const userConfigDir = path.join(CONFIG_DIR, decodedToken.uid);
     await fs.mkdir(userConfigDir, { recursive: true });
     const configPath = path.join(userConfigDir, 'api-configs.json');
@@ -209,6 +216,7 @@ export async function POST(
       configs = JSON.parse(existingData) as ConfigType;
     } catch (error) {
       // File doesn't exist, start with empty object
+      console.log('Creating new config file');
     }
 
     // Update with new fields
@@ -224,10 +232,17 @@ export async function POST(
     const savedConfig = await loadUserConfig(decodedToken.uid, endpoint);
     console.log('Verified saved config:', savedConfig);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true }, { headers });
   } catch (error) {
     console.error('Error in POST handler:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' }, 
+      { status: 500, headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      }}
+    );
   }
 }
 
@@ -235,7 +250,7 @@ export async function OPTIONS() {
   return NextResponse.json({}, {
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });
