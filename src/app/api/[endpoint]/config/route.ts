@@ -12,12 +12,14 @@ if (!getApps().length) {
     const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
     const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
+    console.log('Admin Credentials Check:', {
+      hasProjectId: !!projectId,
+      hasClientEmail: !!clientEmail,
+      hasPrivateKey: !!privateKey,
+    });
+
     if (!projectId || !clientEmail || !privateKey) {
-      console.error('Missing Firebase Admin credentials:', {
-        hasProjectId: !!projectId,
-        hasClientEmail: !!clientEmail,
-        hasPrivateKey: !!privateKey
-      });
+      console.error('Missing Firebase Admin credentials');
       throw new Error('Firebase Admin credentials missing');
     }
 
@@ -28,6 +30,7 @@ if (!getApps().length) {
         privateKey,
       }),
     });
+    console.log('Firebase Admin initialized successfully');
   } catch (error) {
     console.error('Failed to initialize Firebase Admin:', error);
   }
@@ -82,7 +85,7 @@ type Context = {
   params: Promise<{ endpoint: string }>;
 };
 
-// Update verifyToken function
+// Improved token verification
 async function verifyToken(request: NextRequest) {
   try {
     const authHeader = request.headers.get('Authorization');
@@ -99,25 +102,20 @@ async function verifyToken(request: NextRequest) {
 
     const auth = getAuth();
     const decodedToken = await auth.verifyIdToken(token);
-    console.log('Token verified successfully:', !!decodedToken);
+    console.log('Token verified successfully for user:', decodedToken.uid);
     return decodedToken;
   } catch (error) {
-    console.error('Token verification error:', error);
+    console.error('Token verification failed:', error);
     return null;
   }
 }
 
-// Update POST handler to include better error handling
 export async function POST(request: NextRequest) {
   try {
     const decodedToken = await verifyToken(request);
-    
     if (!decodedToken) {
-      console.error('Token verification failed');
-      return NextResponse.json(
-        { error: 'Authentication failed' },
-        { status: 401 }
-      );
+      console.error('Authentication failed');
+      return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -137,11 +135,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('POST handler error:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
-    );
+    console.error('Error in POST handler:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
