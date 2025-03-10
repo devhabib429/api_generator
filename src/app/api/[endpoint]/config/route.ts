@@ -12,14 +12,12 @@ if (!getApps().length) {
     const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
     const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
-    console.log('Admin Credentials Check:', {
-      hasProjectId: !!projectId,
-      hasClientEmail: !!clientEmail,
-      hasPrivateKey: !!privateKey,
-    });
-
     if (!projectId || !clientEmail || !privateKey) {
-      console.error('Missing Firebase Admin credentials');
+      console.error('Missing Firebase Admin credentials:', {
+        hasProjectId: !!projectId,
+        hasClientEmail: !!clientEmail,
+        hasPrivateKey: !!privateKey
+      });
       throw new Error('Firebase Admin credentials missing');
     }
 
@@ -30,9 +28,9 @@ if (!getApps().length) {
         privateKey,
       }),
     });
-    console.log('Firebase Admin initialized successfully');
   } catch (error) {
     console.error('Failed to initialize Firebase Admin:', error);
+    // Don't throw here, let the API routes handle the error
   }
 }
 
@@ -85,37 +83,35 @@ type Context = {
   params: Promise<{ endpoint: string }>;
 };
 
-// Improved token verification
+// Update verifyToken to handle uninitialized Firebase
 async function verifyToken(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      console.error('No Bearer token found');
-      return null;
-    }
-
-    const token = authHeader.split('Bearer ')[1];
-    if (!token) {
-      console.error('Token is empty');
-      return null;
-    }
-
+    const token = request.headers.get('Authorization')?.split('Bearer ')[1];
+    if (!token) return null;
+    
     const auth = getAuth();
-    const decodedToken = await auth.verifyIdToken(token);
-    console.log('Token verified successfully for user:', decodedToken.uid);
-    return decodedToken;
+    if (!auth) {
+      console.error('Firebase Auth not initialized');
+      return null;
+    }
+
+    return await auth.verifyIdToken(token);
   } catch (error) {
-    console.error('Token verification failed:', error);
+    console.error('Error verifying token:', error);
     return null;
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const token = request.headers.get('Authorization')?.split('Bearer ')[1];
+    if (!token) {
+      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
+    }
+
     const decodedToken = await verifyToken(request);
     if (!decodedToken) {
-      console.error('Authentication failed');
-      return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -135,8 +131,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error in POST handler:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error('Save Error:', error);
+    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
   }
 }
 
