@@ -10,8 +10,16 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const auth = getAuth(app);
+// Check if all required config values are present
+const isConfigValid = Object.values(firebaseConfig).every(value => value !== undefined);
+
+// Initialize Firebase only if config is valid
+const app = isConfigValid && typeof window !== 'undefined' 
+  ? getApps().length === 0 
+    ? initializeApp(firebaseConfig) 
+    : getApps()[0]
+  : null;
+
+const auth = app ? getAuth(app) : null;
 
 export { auth }; 
