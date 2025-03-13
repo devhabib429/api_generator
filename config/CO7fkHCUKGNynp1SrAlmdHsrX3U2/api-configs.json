@@ -4,14 +4,6 @@
       {
         "name": "name",
         "type": "string"
-      },
-      {
-        "name": "email",
-        "type": "email"
-      },
-      {
-        "name": "phone",
-        "type": "phone"
       }
     ]
   },

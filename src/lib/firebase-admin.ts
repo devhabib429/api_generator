@@ -3,8 +3,17 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 export function initAdmin() {
   if (!getApps().length) {
     try {
-      const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
-      
+      // Get private key from environment
+      let privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
+
+      // Handle different private key formats
+      if (privateKey) {
+        // Remove quotes if they exist
+        privateKey = privateKey.replace(/"/g, '');
+        // Replace literal \n with newlines
+        privateKey = privateKey.replace(/\\n/g, '\n');
+      }
+
       if (!process.env.FIREBASE_ADMIN_PROJECT_ID || !process.env.FIREBASE_ADMIN_CLIENT_EMAIL || !privateKey) {
         throw new Error('Missing Firebase Admin credentials');
       }
@@ -13,7 +22,7 @@ export function initAdmin() {
         credential: cert({
           projectId: process.env.FIREBASE_ADMIN_PROJECT_ID,
           clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-          privateKey: privateKey
+          privateKey
         }),
       });
       console.log('Firebase Admin initialized successfully');
